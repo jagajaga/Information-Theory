@@ -1,0 +1,147 @@
+\documentclass{article}
+\usepackage[russian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{float}
+\setcounter{section}{-1}
+\usepackage[margin=2cm]{geometry}
+\usepackage{listings}
+\usepackage{multirow} 
+\usepackage{caption}
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\lstset{ %
+  backgroundcolor=\color{white},   
+  basicstyle=\footnotesize,        
+  breakatwhitespace=false,         
+  breaklines=true,                 
+  captionpos=b,                    
+  commentstyle=\color{mygreen},    
+  deletekeywords={...},            
+  escapeinside={\%*}{*)},          
+  extendedchars=true,              
+  keepspaces=true,                 
+  keywordstyle=\color{blue},       
+  morekeywords={*,...},            
+  numberstyle=\tiny\color{mygray}, 
+  rulecolor=\color{black},         
+  showspaces=false,                }
+\title{Отчет}
+
+\author{Арсений Серока\\ студент группы \textnumero 4538\\Вариант \textnumero 19}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Формулировка Задания}
+\begin{enumerate}
+\def \n {$n = [1..4]$}
+\def \Hn {$H_n(x)$}
+\item Построить эмпирическое распределение вероятностей на последовательностях длины \n. Замечание: рассмотрите «скользящие» блоки, т.е. в последовательности длины $N$ наблюдается $N-n+1$ блоков длины $n$.
+\item Оценить энтропию на букву источника \Hn, приписав нулевые вероятности последовательностям букв, которые не встретились в файле при \n. 
+\item Оценить энтропию на букву источника \Hn, приписывая вероятности порядка $1 / N^n$ последовательностям букв, которые не встретились в файле и соответственно нормируя вероятности остальных последовательностей, при \n.
+\item Применить к заданной последовательности один из известных архиваторов (например, RAR, pkzip). Сопоставить результаты с оценками энтропии на сообщение.
+\end{enumerate}
+\newpage
+\section{Исходный код программы на языке haskell}
+
+\begin{lstlisting}[language=haskell]
+module Main where
+
+import qualified Data.List              as L
+import           Data.Map
+import           System.Environment
+
+countSequences :: Int -> String -> Map String Int
+countSequences n = fromListWith (+) . flip zip (repeat 1) . subsequencesN n
+
+subsequencesN :: Int -> [a] -> [[a]]
+subsequencesN n xs = [ take n x | x <- L.tails xs, length x >= n ]
+
+main :: IO ()
+main = do
+    [file] <- getArgs
+    fileContents <- readFile file
+    let inputSize = fromIntegral (length fileContents) :: Double
+    mapM_ putStrLn $ do
+        n <- [1.0..4.0] :: [Double]
+        let sequences = toList $ countSequences (round n) fileContents
+        let size      = length sequences
+        let totalSeq  = inputSize - n + 1.0
+        let missCnt   = fromIntegral (255^round n - size) :: Double
+        let missProb  = 1.0 / (inputSize ^ round n)
+        let existProb = 1.0 - missCnt * missProb
+        let eNorm     = -missCnt * missProb
+        let eZero     = 0.0 :: Double
+        let coef      = [ (i, j) | (seq, len) <- sequences,
+                    let i = (fromIntegral len :: Double) / totalSeq, 
+                    let j = i * existProb ]
+        let (a, b)    = Prelude.foldl (\(a,b) (c,d) -> 
+                (a - c * logBase 2 c, b - d * logBase 2 d))
+            (eZero, eNorm) coef
+        return $ show (round n, a / n, b / n)
+\end{lstlisting}
+\newpage
+\section{Входные Данные}
+\begin{table}[H]
+\begin{tabular}{|l|r|}
+\hline
+    Имя файла & grammar.lsp\\\hline
+    Размер (байт) & 3721\\\hline
+\end{tabular}
+\end{table}
+\subsection{Результат архивации данного файла}
+\begin{table}[H]
+\begin{tabular}{|l|c|r|l|}
+\hline
+\multicolumn{2}{|l|}{Размер} & \multirow{2}{*}{Команда} & \multirow{2}{*}{Имя Файла} \\
+\cline{1-2}
+Байт  & Бит & & \\
+\hline
+1283 & 10264 & bzip2         & grammar.lsp.bz2\\
+1376 & 11008 & tar cjvf      & grammar.lsp.tar.bz2\\
+1353 & 10824 & tar czvf      & grammar.lsp.tar.gz\\
+1388 & 11104 & zip -r        & grammar.lsp.zip\\
+1234 & 9872  & gzip -c -9 -n & grammar.lsp.gz \\ \hline
+\end{tabular}
+\end{table}
+
+\section{Результаты}
+\begin{table}[H]
+\begin{tabular}{|c|c|c|}
+\hline
+n & $P = 0$ & $P = 1 / N^n$\\
+\hline
+1 & 4.632267666454032 & 4.42903009900037\\
+2 & 3.7186185597260906 & 3.702301958586279\\
+3 & 2.9078214400980222 & 2.906933101640151\\
+4 & 2.348285677432823 & 2.3482363251277403\\
+\hline
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}Энтропия на байт источника}
+\end{table}
+\begin{table}[H]
+\begin{tabular}{|c|c|c|}
+\hline
+n & $P = 0$ & $P = 1 / N^n$\\
+\hline
+1 & 17236.667986875455 & 16480.420998380374\\
+2 & 13836.979660740782 & 13776.265587899545\\
+3 & 10820.003578604741 & 10816.698071203002\\
+4 & 8737.971005727533  & 8737.787365800321 \\
+\hline
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}Энтропия файла}
+\end{table}
+\subsection{Вывод}
+Как мы видим, энтропия файла при $n = 4$ в $1.13$ раз меньше, чем размер файла при лучшем сжатии. Это можно объяснить тем, что на маленьком файле архиватор не может достичь энтропии по разным причинам. Например, если архиватор использует алгоритм Хаффмана для сжатия, то надо передавать таблицу, что дает лишний объем.
+\end{document}
