@@ -1,0 +1,217 @@
+\documentclass{article}
+\usepackage[russian]{babel}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{graphicx}
+\usepackage[colorinlistoftodos]{todonotes}
+\usepackage{float}
+\setcounter{section}{-1}
+\usepackage[margin=2cm]{geometry}
+\usepackage{listings}
+\usepackage{multirow} 
+\usepackage{caption}
+\usepackage{color}
+\definecolor{mygreen}{rgb}{0,0.6,0}
+\definecolor{mygray}{rgb}{0.5,0.5,0.5}
+\definecolor{mymauve}{rgb}{0.58,0,0.82}
+
+\title{Отчет}
+
+\author{Арсений Серока\\ студент группы \textnumero 4538\\Вариант \textnumero 5\\\\Пьянкова Юлия\\ студентка группы \textnumero 4539\\Вариант \textnumero 12}
+
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\section{Формулировка Задания}
+\def \n {$n = [1..4]$}
+\def \Hn {$H_n(x)$}
+Для марковского источника с заданной матрицей переходных вероятностей\\
+найти $H(X),\ H(X|X^{\infty}),\ H_2(X),\ H_n(X)$. Построить коды Хаффмена для ансамблей.\\
+Указать наилучший алгоритм кодирования для данного источника.
+\newpage
+\section{Вариант 5}
+\subsection{Дано:}
+\[
+   \Phi =
+  \left[ {\begin{array}{ccc}
+   \frac{3}{4} & \frac{1}{4} & 0 \\[1em]
+   0 & \frac{1}{4} & \frac{3}{4} \\[1em]
+   \frac{1}{4} & \frac{1}{4} & \frac{1}{2} \\
+  \end{array} } \right]
+\]
+\subsection{Решение:}
+Найдем вектор $\overrightarrow{x} = (p_a,\ p_b,\ p_c)$, при этом он должен удовлетворять $\overrightarrow{x}\Phi = \overrightarrow{x}$ и $p_a + p_b + p_c = 1$
+
+\[
+ \left\{ 
+   \begin{array}{ll}
+       p_a(\frac{3}{4} - 1) + \frac{p_c}{4} = 0, \\[1em]
+       \frac{p_a}{4} + p_b(\frac{1}{4} - 1) + \frac{p_c}{4} = 0, \\[1em]
+       p_a + p_b + p_c = 1.
+   \end{array} 
+ \right. 
+\] \\
+Отсюда $\overrightarrow{x} = (\frac{3}{8}, \frac{1}{4}, \frac{3}{8})$\\
+Энтропия источника:
+$H(X) = -p_a\log{p_a} - p_b\log{p_b} - p_c\log{p_c} \approx 1{.}561278$. \\\\
+Теперь найдём условную энтропию $H(X|X)$. По определению,\\
+$
+H(X|X) = \sum\limits_{y} p(y) \cdot H(X|y) =\\
+= p_a \cdot H(X|a) + p_b \cdot H(X|b) + p_c \cdot H(X|c) \approx 0{.}429229296 $\\
+Так как нам дана простая марковская цепь, то $H(X|X) = H(X|X^2) = \dots = H(X|X^{\infty})$\\
+По свойствам энтропии:\\
+$
+H_2(X) = \frac{H(X^2)}{2} = \frac{H(X) + H(X|X)}{2} \approx 0{.}9952537 \\ \\
+H_n(X) = \frac{H(X) + (n - 1)H(X|X)}{n} \approx \frac{1{.}561278 + (n-1)*0{.}429229}{n}
+$
+
+\begin{table}[H]
+\begin{tabular}{|c|c|c|c|}
+    \hline
+  Символ      & a              & b              & c             \\
+    \hline
+  Код         & 01             & 00             & 1             \\
+    \hline
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}Код Хаффмена для ансамбля $X$}
+\end{table}
+
+Средняя длина кода: $2 * \frac{3}{8} + 2 * \frac{1}{4} + 1 * \frac{3}{8} = 1.625$
+
+\begin{table}[H]
+\begin{tabular}{|c|c|}
+aa & $(\frac{3}{8}) * (\frac{3}{4}) = \frac{9}{32}$\\\\
+ab & $(\frac{3}{8}) * (\frac{1}{4}) = \frac{3}{32}$\\\\
+ac & $0$\\\\
+ba & $0$\\\\
+bb & $(\frac{1}{4}) * (\frac{1}{4}) = \frac{1}{16}$\\\\
+bc & $(\frac{1}{4}) * (\frac{3}{4}) = \frac{3}{16}$\\\\
+ca & $(\frac{3}{8}) * (\frac{1}{4}) = \frac{3}{32}$\\\\
+cb & $(\frac{3}{8}) * (\frac{1}{4}) = \frac{3}{32}$\\\\
+cc & $(\frac{3}{8}) * (\frac{1}{2}) = \frac{3}{16}$\\\\
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}Вероятности пар символов}
+\end{table}
+
+
+\begin{table}[H]
+\begin{tabular}{|c|c|}
+aa & 00\\
+ab & 0010\\
+bb & 1010\\
+bc & 110\\
+ca & 001\\
+cb & 101\\
+cc & 11\\
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}Код Хаффмена для ансамбля $X^2$}
+\end{table}
+\\
+Средняя длина кодового слова: $2 * \frac{9}{32} + 4 * \frac{3}{32} + 4 * \frac{2}{32} + 3 * \frac{6}{32} + 2 * 3 * \frac{3}{32} + 2 * \frac{6}{32} = 2{.}6875$\\
+На один символ: $1{.}34375$
+
+Оптимальный код Хаффмена для исходной матрицы: для первого символа — код Хаффмена для ансамбля $X$, для второго согласно таблице:
+\begin{table}[H]
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+a & a & a & b & b & b & c & c & c & предыдущий символ\\
+a & b & c & a & b & c & a & b & c & следующий символ\\
+0 & 1 &   &   & 0 & 1 &10 &11 & 0 & код\\
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}}
+\end{table}
+
+Средняя длина: $1 * \frac{9}{32} + 1 * \frac{3}{32} + 1 * \frac{1}{16} + 1 * \frac{3}{16} + 2 * 2 * \frac{3}{32} + 1 * \frac{3}{16} = 1.1875$. Поэтому алгоритм кодирования есть лучший для данного источника. 
+\newpage
+\section{Вариант 12}
+\subsection{Дано:}
+\[
+   \Phi =
+  \left[ {\begin{array}{ccc}
+   \frac{1}{4} & \frac{3}{4} & 0 \\[1em]
+   0 & \frac{1}{2} & \frac{1}{2} \\[1em]
+   \frac{1}{3} & \frac{1}{3} & \frac{1}{3} \\
+  \end{array} } \right]
+\]
+\subsection{Решение:}
+$\overrightarrow{x} = (\frac{4}{25}, \frac{2}{25}, \frac{9}{25})$\\
+Энтропия источника:
+$H(X) = -p_a\log{p_a} - p_b\log{p_b} - p_c\log{p_c} \approx 1{.}4619011$. \\\\
+Теперь найдём условную энтропию $H(X|X)$. По определению,\\
+$
+H(X|X) = \sum\limits_{y} p(y) \cdot H(X|y) =\\
+= p_a \cdot H(X|a) + p_b \cdot H(X|b) + p_c \cdot H(X|c) \approx 0{.}409413 $\\
+Так как нам дана простая марковская цепь, то $H(X|X) = H(X|X^2) = \dots = H(X|X^{\infty})$\\
+По свойствам энтропии:\\
+$
+H_2(X) = \frac{H(X^2)}{2} = \frac{H(X) + H(X|X)}{2} \approx 0{.}9356573 \\ \\
+H_n(X) = \frac{H(X) + (n - 1)H(X|X)}{n} \approx \frac{1{.}461901189 + (n-1)*0{.}4094134997}{n}
+$
+
+\begin{table}[H]
+\begin{tabular}{|c|c|c|c|}
+    \hline
+  Символ      & a              & b              & c             \\
+    \hline
+  Код         & 01             & 0              & 11             \\
+    \hline
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}Код Хаффмена для ансамбля $X$}
+\end{table}
+
+Средняя длина кода: $2 * \frac{4}{25} + 1 * 1\frac{2}{25} + 2 * \frac{9}{25} = 3\frac{8}{25} = 1.52$
+
+\begin{table}[H]
+\begin{tabular}{|c|c|}
+aa & $(\frac{4}{25}) * (\frac{1}{4}) = \frac{1}{25}$\\\\
+ab & $(\frac{4}{25}) * (\frac{3}{4}) = \frac{3}{25}$\\\\
+ac & $0$\\\\
+ba & $0$\\\\
+bb & $(1\frac{2}{25}) * (\frac{1}{2}) = \frac{6}{25}$\\\\
+bc & $(1\frac{2}{25}) * (\frac{1}{2}) = \frac{6}{25}$\\\\
+ca & $(\frac{9}{25}) * (\frac{1}{3}) = \frac{3}{25}$\\\\
+cb & $(\frac{9}{25}) * (\frac{1}{3}) = \frac{3}{25}$\\\\
+cc & $(\frac{9}{25}) * (\frac{1}{3}) = \frac{3}{25}$\\\\
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}Вероятности пар символов}
+\end{table}
+
+
+\begin{table}[H]
+\begin{tabular}{|c|c|}
+aa & 0011\\
+ab & 1011\\
+bb & 00\\
+bc & 10\\
+ca & 001\\
+cb & 101\\
+cc & 111\\
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}Код Хаффмена для ансамбля $X^2$}
+\end{table}
+\\
+
+Средняя длина кодового слова: $4 * \frac{1}{25} + 4 * \frac{3}{25} + 2 * 2 * \frac{6}{25} + 3 * 3 * \frac{3}{25} = 2.68$\\
+На один символ: $1.34$\\
+
+Оптимальный код Хаффмена для исходной матрицы: для первого символа — код Хаффмена для ансамбля $X$, для второго согласно таблице:
+\begin{table}[H]
+\begin{tabular}{|c|c|c|c|c|c|c|c|c|c|}
+a & a & a & b & b & b & c & c & c & предыдущий символ\\
+a & b & c & a & b & c & a & b & c & следующий символ\\
+0 & 1 &   &   & 0 & 1 & 0 &10 &11 & код\\
+\end{tabular}
+\captionsetup{singlelinecheck=off,justification=raggedright}
+\caption{\label{tab:widgets}}
+\end{table}
+Средняя длина: $1 * \frac{1}{25} + 1 * \frac{3}{25} + 2 * 1 * \frac{6}{25} + 1 * \frac{3}{25} + 2 * 2 * \frac{3}{25} = 1.24$
+Поэтому алгоритм кодирования тоже есть лучший для данного источника. 
+\end{document}
